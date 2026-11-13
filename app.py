@@ -45,23 +45,28 @@ with st.spinner('Fetching NASA Climatology Data...'):
     nasa_data = fetch_nasa_data(lat, lon)
 
 if nasa_data:
-    # Extract current month data (formatting month to two digits, e.g., "07")
-    month_key = f"{current_month:02d}"
+    # 1. Map current month to NASA's 3-letter format
+    nasa_months = {1: "JAN", 2: "FEB", 3: "MAR", 4: "APR", 5: "MAY", 6: "JUN", 
+                   7: "JUL", 8: "AUG", 9: "SEP", 10: "OCT", 11: "NOV", 12: "DEC"}
+    month_key = nasa_months[current_month]
+
     temp_now = nasa_data['T2M'][month_key]
     precip_now = nasa_data['PRECTOTCORR'][month_key]
     soil_moist_now = nasa_data['GWETTOP'][month_key]
 
-    # Display Top Metrics
+    # 2. Display Top Metrics
     col1, col2, col3 = st.columns(3)
     col1.metric(label="🌡️ Avg Temperature", value=f"{temp_now} °C")
     col2.metric(label="🌧️ Precipitation", value=f"{precip_now} mm/day")
     col3.metric(label="💧 Soil Wetness Index", value=f"{soil_moist_now}")
 
-    # Plot Annual Climatology Trends
+    # 3. Plot Annual Climatology Trends using the exact NASA keys
     st.write("#### Annual Precipitation & Temperature Trends")
-    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    temp_data = [nasa_data['T2M'][f"{i:02d}"] for i in range(1, 13)]
-    precip_data = [nasa_data['PRECTOTCORR'][f"{i:02d}"] for i in range(1, 13)]
+    months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+    
+    # Extract data using the string keys instead of numbers
+    temp_data = [nasa_data['T2M'][m] for m in months]
+    precip_data = [nasa_data['PRECTOTCORR'][m] for m in months]
     
     df_chart = pd.DataFrame({"Month": months, "Temperature (°C)": temp_data, "Precipitation (mm)": precip_data})
     fig = px.line(df_chart, x="Month", y=["Temperature (°C)", "Precipitation (mm)"], markers=True, title="NASA Climatology Data (Historical Averages)")
@@ -94,4 +99,4 @@ if nasa_data:
         st.write("**Reasoning:** Soil moisture and temperatures are currently at moderate levels. This is a solid window for short-term, high-yield crops.")
 
     st.markdown("---")
-    st.caption("Developed by Team [Your Team Name] - NASA Space Apps Challenge 2026")
+    st.caption("Developed by Team Quadrant - NASA Space Apps Challenge 2026")
